@@ -1,0 +1,32 @@
+https://github.com/ocornut/imgui/blob/master/imgui_widgets.cpp
+
+store mouse position so don't have to call getpos everywhere
+
+ButtonBehaviour
+function that sets hovered and held, returns boolean whether pressed
+
+Could pass in arguments that we want to read and modify using single element
+array?
+
+Button("label")
+- Define rect based on label text size and padding style parameters
+- Check for hovered, held or pressed
+RETURNS: pressed
+
+Checkbox("label", bool->editted)
+- Always a perfect square
+- Check for hovered, held or pressed
+RETURNS: pressed
+
+Slider("label", Vec2 size, value, min, max, format: int, float, flags?)
+- Create bounding box based on padding, label
+- Hovered, clicked or global context keeping an active reference to it
+RETURNS: updated value
+
+OTHER TYPES:
+Text
+Label
+Image
+RadioButton
+Combo
+Listbox
