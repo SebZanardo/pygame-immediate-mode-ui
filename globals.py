@@ -1,5 +1,12 @@
-window = None
-ui_context = None
-ui_style = None
-mouse_pos = None
-mouse_clicked = None
+import pygame
+import constants as c
+
+
+pygame.init()
+
+window: pygame.window.Window = pygame.display.set_mode((c.WIDTH, c.HEIGHT))
+clock: pygame.time.Clock = pygame.time.Clock()
+
+mouse_pos: pygame.Vector2 = pygame.Vector2(-1, -1)
+mouse_clicked: bool = False
+mouse_held: bool = False

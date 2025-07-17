@@ -18,10 +18,10 @@ class StyleUI:
     padding_x: int = 5
     padding_y: int = 5
 
-    background_colour = (0, 0, 0)
-    hovered_colour = (50, 50, 50)
-    clicked_colour = (200, 200, 200)
-    text_colour = (255, 0, 255)
+    background_colour: Colour = (0, 0, 0)
+    hovered_colour: Colour = (50, 50, 50)
+    clicked_colour: Colour = (200, 200, 200)
+    text_colour: Colour = (255, 0, 255)
 
 
 @dataclass(slots=True)
@@ -30,33 +30,36 @@ class ContextUI:
     ry: int = 0
 
     # To track selected element for keyboard input and sliders
-    id: int = 0
+    current_id: int = 0
 
     # Where to render next element
     x: int = 0
     y: int = 0
 
     # Stored incase you want the next element to sit next to the current one
+    tracked_id: int = -1
     last_x: int = 0
     last_y: int = 0
 
     def bbox(self, width: int, height: int) -> Bbox:
         rect = (
-                g.ui_context.x,
-                g.ui_context.y,
+                self.x,
+                self.y,
                 width,
                 height
             )
 
-        g.ui_context.last_x = g.ui_context.x + width + g.ui_style.padding_x
-        g.ui_context.last_y = g.ui_context.y
+        self.last_x = self.x + width + style.padding_x
+        self.last_y = self.y
 
-        g.ui_context.x = g.ui_context.rx
-        g.ui_context.y += height + g.ui_style.padding_y
+        self.x = self.rx
+        self.y += height + style.padding_y
+
+        self.current_id += 1
 
         return rect
 
-    def interact(self, bbox: Bbox) -> tuple[bool, bool, bool]:
+    def interact(self, bbox: bbox) -> tuple[bool, bool, bool]:
         mx, my = g.mouse_pos
         x, y, w, h = bbox
 
@@ -64,63 +67,149 @@ class ContextUI:
         clicked = False
         held = False
 
-        if mx >= x and my >= y and mx <= x + w and my <= y + h:
+        if self.tracked_id == self.current_id:
+            if g.mouse_held:
+                held = True
+            else:
+                held = False
+                self.tracked_id = -1
+
+        elif mx >= x and my >= y and mx <= x + w and my <= y + h:
             hovered = True
-            if g.mouse_clicked:
+            if g.mouse_clicked and self.tracked_id == -1:
                 clicked = True
+                self.tracked_id = self.current_id
 
         return hovered, clicked, held
 
 
+# GLOBALS #####################################################################
+style = StyleUI()
+context = ContextUI()
+###############################################################################
+
+
 def im_button(label: str) -> bool:
-    rect = g.ui_context.bbox(*g.ui_style.button_dim)
-    hovered, clicked, held = (False, False, False)
-    return clicked
-
-
-def im_checkbox(label: str, value: list[bool]) -> bool:
-    bbox = g.ui_context.bbox(*g.ui_style.checkbox_dim)
-
-    hovered, clicked, held = g.ui_context.interact(bbox)
-
-    if clicked:
-        value[0] = not value[0]
-
-    # TODO: Draw loaded assets here not shapes
+    bbox = context.bbox(*style.button_dim)
+    hovered, clicked, held = context.interact(bbox)
     pygame.draw.rect(
         g.window,
-        g.ui_style.background_colour,
+        style.background_colour,
         bbox
     )
-
-    if value[0]:
+    if clicked:
+        # pygame.draw.rect(
+        #     g.window,
+        #     style.clicked_colour,
+        #     bbox
+        # )
+        pass
+    elif held:
         pygame.draw.rect(
             g.window,
-            g.ui_style.text_colour,
+            style.clicked_colour,
+            bbox
+        )
+    elif hovered:
+        pygame.draw.rect(
+            g.window,
+            style.hovered_colour,
             bbox
         )
 
     return clicked
 
 
-def im_slider(label: str, value: list[float], lo: float, hi: float) -> bool:
-    rect = g.ui_context.bbox(*g.ui_style.slider_dim)
+def im_checkbox(label: str, value: list[bool]) -> bool:
+    bbox = context.bbox(*style.checkbox_dim)
+    hovered, clicked, held = context.interact(bbox)
 
-    hovered, clicked, held = (False, False, False)
+    pygame.draw.rect(
+        g.window,
+        style.background_colour,
+        bbox
+    )
+
+    if clicked:
+        value[0] = not value[0]
+        # pygame.draw.rect(
+        #     g.window,
+        #     style.clicked_colour,
+        #     bbox
+        # )
+        pass
+    elif held:
+        pygame.draw.rect(
+            g.window,
+            style.clicked_colour,
+            bbox
+        )
+    elif hovered:
+        pygame.draw.rect(
+            g.window,
+            style.hovered_colour,
+            bbox
+        )
+
+    if value[0]:
+        pygame.draw.circle(
+            g.window,
+            style.text_colour,
+            (bbox[0] + bbox[2] // 2, bbox[1] + bbox[3] // 2),
+            8
+        )
+
+    return clicked
+
+
+def im_slider(label: str, value: list[float], lo: float, hi: float) -> bool:
+    bbox = context.bbox(*style.slider_dim)
+    hovered, clicked, held = context.interact(bbox)
+    pygame.draw.rect(
+        g.window,
+        style.background_colour,
+        bbox
+    )
+    if held:
+        value[0] = g.mouse_pos[0] - bbox[0]
+        value[0] = min(max(value[0], lo), hi)
+        pygame.draw.rect(
+            g.window,
+            style.clicked_colour,
+            bbox
+        )
+    elif hovered:
+        pygame.draw.rect(
+            g.window,
+            style.hovered_colour,
+            bbox
+        )
+
+    pygame.draw.rect(
+        g.window,
+        style.text_colour,
+        (
+            bbox[0],
+            bbox[1],
+            value[0] / hi * style.slider_dim[0],
+            bbox[3]
+        )
+    )
 
     return clicked
 
 
 def im_same_line() -> None:
-    g.ui_context.x = g.ui_context.last_x
-    g.ui_context.y = g.ui_context.last_y
+    context.x = context.last_x
+    context.y = context.last_y
 
 
 def im_set_next_position(x: int, y: int) -> None:
-    g.ui_context.x = x
-    g.ui_context.y = y
+    context.x = x
+    context.y = y
 
 
 def im_reset_position() -> None:
-    g.ui_context.x = g.ui_context.rx
-    g.ui_context.y = g.ui_context.ry
+    context.x = context.rx
+    context.y = context.ry
+    context.current_id = 0

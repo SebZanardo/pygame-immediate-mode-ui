@@ -2,31 +2,21 @@ import pygame
 
 import ui
 import globals as g
-
-
-WIDTH = 480
-HEIGHT = 360
-FPS = 60
+import constants as c
 
 
 def main() -> None:
-    pygame.init()
-
-    g.window = pygame.display.set_mode((WIDTH, HEIGHT))
-    clock = pygame.time.Clock()
     pygame.display.set_caption("immediate-mode-ui")
-
-    g.ui_style = ui.StyleUI()
-    g.ui_context = ui.ContextUI()
 
     toggle1 = [False]
     toggle2 = [False]
     toggle3 = [False]
+    slider = [50]
 
     running = True
 
     while running:
-        clock.tick(FPS)
+        g.clock.tick(c.FPS)
 
         g.mouse_pos = pygame.mouse.get_pos()
         g.mouse_clicked = False
@@ -37,6 +27,9 @@ def main() -> None:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 g.mouse_clicked = True
+                g.mouse_held = True
+            if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                g.mouse_held = False
 
         g.window.fill((255, 255, 255))
 
@@ -47,6 +40,12 @@ def main() -> None:
         ui.im_checkbox("checkbox", toggle3)
         ui.im_same_line()
         ui.im_checkbox("checkbox", toggle3)
+        ui.im_button("hello world!")
+        ui.im_set_next_position(100, 100)
+        ui.im_slider("sliiiideerr", slider, 0, 100)
+        ui.im_same_line()
+        ui.im_same_line()
+        ui.im_button("hello world!")
 
         pygame.display.flip()
 
