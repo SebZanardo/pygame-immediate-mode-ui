@@ -33,19 +33,20 @@ def main() -> None:
 
         g.window.fill((255, 255, 255))
 
-        ui.im_reset_position()
-        ui.im_checkbox("checkbox", toggle1)
-        ui.im_checkbox("checkbox", toggle2)
+        ui.im_reset_position(10, 10)
+        ui.im_checkbox(toggle1)
+        ui.im_checkbox(toggle2)
         ui.im_same_line()
-        ui.im_checkbox("checkbox", toggle3)
+        ui.im_checkbox(toggle3)
         ui.im_same_line()
-        ui.im_checkbox("checkbox", toggle3)
-        ui.im_button("hello world!")
-        ui.im_set_next_position(100, 100)
-        ui.im_slider("sliiiideerr", slider, 0, 100)
+        ui.im_checkbox(toggle3)
+        ui.im_button("hello")
+        ui.im_set_next_position(50, 200)
+        ui.im_text("volume: ")
         ui.im_same_line()
-        ui.im_same_line()
-        ui.im_button("hello world!")
+        ui.im_same_line()  # second same line is this is ignored
+        ui.im_slider(slider, 0, 100)
+        ui.im_button("button")
 
         pygame.display.flip()
 

@@ -11,17 +11,18 @@ Colour = tuple[int, int, int]
 
 @dataclass(slots=True)
 class StyleUI:
-    button_dim: Pos = (50, 20)
+    button_dim: Pos = (100, 20)
     checkbox_dim: Pos = (20, 20)
-    slider_dim: Pos = (100, 20)
+    slider_dim: Pos = (300, 20)
 
     padding_x: int = 5
     padding_y: int = 5
 
     background_colour: Colour = (0, 0, 0)
     hovered_colour: Colour = (50, 50, 50)
-    clicked_colour: Colour = (200, 200, 200)
-    text_colour: Colour = (255, 0, 255)
+    clicked_colour: Colour = (100, 100, 100)
+    main_colour: Colour = (255, 0, 255)
+    text_colour: Colour = (255, 255, 255)
 
 
 @dataclass(slots=True)
@@ -89,6 +90,12 @@ context = ContextUI()
 ###############################################################################
 
 
+def im_text(label: str) -> None:
+    text = g.FONT.render(label, False, style.background_colour)
+    bbox = context.bbox(*text.get_size())
+    g.window.blit(text, (bbox[0], bbox[1]))
+
+
 def im_button(label: str) -> bool:
     bbox = context.bbox(*style.button_dim)
     hovered, clicked, held = context.interact(bbox)
@@ -117,10 +124,13 @@ def im_button(label: str) -> bool:
             bbox
         )
 
+    text = g.FONT.render(label, False, style.text_colour)
+    g.window.blit(text, (bbox[0], bbox[1]))
+
     return clicked
 
 
-def im_checkbox(label: str, value: list[bool]) -> bool:
+def im_checkbox(value: list[bool]) -> bool:
     bbox = context.bbox(*style.checkbox_dim)
     hovered, clicked, held = context.interact(bbox)
 
@@ -154,7 +164,7 @@ def im_checkbox(label: str, value: list[bool]) -> bool:
     if value[0]:
         pygame.draw.circle(
             g.window,
-            style.text_colour,
+            style.main_colour,
             (bbox[0] + bbox[2] // 2, bbox[1] + bbox[3] // 2),
             8
         )
@@ -162,7 +172,7 @@ def im_checkbox(label: str, value: list[bool]) -> bool:
     return clicked
 
 
-def im_slider(label: str, value: list[float], lo: float, hi: float) -> bool:
+def im_slider(value: list[float], lo: float, hi: float) -> bool:
     bbox = context.bbox(*style.slider_dim)
     hovered, clicked, held = context.interact(bbox)
     pygame.draw.rect(
@@ -171,7 +181,9 @@ def im_slider(label: str, value: list[float], lo: float, hi: float) -> bool:
         bbox
     )
     if held:
-        value[0] = g.mouse_pos[0] - bbox[0]
+        percent = (g.mouse_pos[0] - bbox[0]) / style.slider_dim[0]
+        difference = hi - lo
+        value[0] = percent * difference + lo
         value[0] = min(max(value[0], lo), hi)
         pygame.draw.rect(
             g.window,
@@ -187,7 +199,7 @@ def im_slider(label: str, value: list[float], lo: float, hi: float) -> bool:
 
     pygame.draw.rect(
         g.window,
-        style.text_colour,
+        style.main_colour,
         (
             bbox[0],
             bbox[1],
@@ -195,6 +207,9 @@ def im_slider(label: str, value: list[float], lo: float, hi: float) -> bool:
             bbox[3]
         )
     )
+
+    value_text = g.FONT.render(str(int(value[0])), False, style.text_colour)
+    g.window.blit(value_text, (bbox[0], bbox[1]))
 
     return clicked
 
@@ -209,7 +224,9 @@ def im_set_next_position(x: int, y: int) -> None:
     context.y = y
 
 
-def im_reset_position() -> None:
+def im_reset_position(x: int, y: int) -> None:
+    context.rx = x
+    context.ry = y
     context.x = context.rx
     context.y = context.ry
     context.current_id = 0
