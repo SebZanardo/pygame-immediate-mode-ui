@@ -13,3 +13,4 @@ __Features:__
 We ended up using an improved version of this code for a 2 day game jam  
 Our submission, POWER defence you can play at this link: https://sebzanardo.itch.io/power-defence
 
+<img width="477" height="357" alt="cover" src="https://github.com/user-attachments/assets/473cea57-74e7-47f4-96da-cb2b1a17365c" />
